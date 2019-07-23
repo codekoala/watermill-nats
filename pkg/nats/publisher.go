@@ -81,6 +81,15 @@ func NewStreamingPublisherWithStanConn(conn stan.Conn, config StreamingPublisher
 	}, nil
 }
 
+func (p StreamingPublisher) ackHandler(guid string, err error) {
+	if err != nil {
+		p.logger.Warn("Failed to publish message", watermill.LogFields{
+			"guid": guid,
+			"err":  err,
+		})
+	}
+}
+
 // Publish publishes message to NATS.
 //
 // Publish will not return until an ack has been received from NATS Streaming.
@@ -99,7 +108,7 @@ func (p StreamingPublisher) Publish(topic string, messages ...*message.Message) 
 			return err
 		}
 
-		if err := p.conn.Publish(topic, b); err != nil {
+		if _, err := p.conn.PublishAsync(topic, b, p.ackHandler); err != nil {
 			return errors.Wrap(err, "sending message failed")
 		}
 	}
