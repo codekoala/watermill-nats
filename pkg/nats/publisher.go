@@ -83,9 +83,8 @@ func NewStreamingPublisherWithStanConn(conn stan.Conn, config StreamingPublisher
 
 func (p StreamingPublisher) ackHandler(guid string, err error) {
 	if err != nil {
-		p.logger.Error("Failed to publish message", watermill.LogFields{
+		p.logger.Error("Failed to publish message", err, watermill.LogFields{
 			"guid": guid,
-			"err":  err,
 		})
 	}
 }
